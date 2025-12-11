@@ -656,7 +656,58 @@
     <script>
         // API 키 및 설정
         const API_KEY = 'b8d51375948e422eb4d6c7b0a38b1cbc';
+        // 경기데이터드림 API URL
         const API_URL = 'https://openapi.gg.go.kr/Aedinstal';
+        
+        // CORS 프록시 목록 (브라우저에서 직접 API 호출 시 CORS 문제 해결용)
+        const CORS_PROXIES = [
+            'https://corsproxy.io/?',
+            'https://api.allorigins.win/raw?url=',
+            ''  // 직접 호출 시도
+        ];
+
+        // 샘플 데이터 (API 실패 시 사용)
+        const SAMPLE_DATA = [
+            { INSTL_PLC_NM: "수원시청", INSTL_ADDR: "경기도 수원시 팔달구 효원로 241", SIGUN_NM: "수원시", MNG_INST_TEL_NO: "031-228-2114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "00:00", WKDAY_CLOS_TIME: "24:00" },
+            { INSTL_PLC_NM: "수원역", INSTL_ADDR: "경기도 수원시 팔달구 덕영대로 924", SIGUN_NM: "수원시", MNG_INST_TEL_NO: "1544-7788", AED_MANUFACTURE: "메디아나", WKDAY_BG_TIME: "05:00", WKDAY_CLOS_TIME: "24:00" },
+            { INSTL_PLC_NM: "성남시청", INSTL_ADDR: "경기도 성남시 중원구 성남대로 997", SIGUN_NM: "성남시", MNG_INST_TEL_NO: "031-729-2114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
+            { INSTL_PLC_NM: "판교역", INSTL_ADDR: "경기도 성남시 분당구 판교역로 160", SIGUN_NM: "성남시", MNG_INST_TEL_NO: "031-8018-7777", AED_MANUFACTURE: "하트가드", WKDAY_BG_TIME: "05:30", WKDAY_CLOS_TIME: "24:00" },
+            { INSTL_PLC_NM: "용인시청", INSTL_ADDR: "경기도 용인시 처인구 중부대로 1199", SIGUN_NM: "용인시", MNG_INST_TEL_NO: "031-324-2114", AED_MANUFACTURE: "CU메디칼", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
+            { INSTL_PLC_NM: "에버랜드", INSTL_ADDR: "경기도 용인시 처인구 포곡읍 에버랜드로 199", SIGUN_NM: "용인시", MNG_INST_TEL_NO: "031-320-5000", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "10:00", WKDAY_CLOS_TIME: "22:00" },
+            { INSTL_PLC_NM: "부천시청", INSTL_ADDR: "경기도 부천시 길주로 210", SIGUN_NM: "부천시", MNG_INST_TEL_NO: "032-625-2114", AED_MANUFACTURE: "메디아나", WKDAY_BG_TIME: "00:00", WKDAY_CLOS_TIME: "24:00" },
+            { INSTL_PLC_NM: "안산시청", INSTL_ADDR: "경기도 안산시 단원구 화랑로 387", SIGUN_NM: "안산시", MNG_INST_TEL_NO: "031-481-2114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
+            { INSTL_PLC_NM: "화성시청", INSTL_ADDR: "경기도 화성시 남양읍 시청로 159", SIGUN_NM: "화성시", MNG_INST_TEL_NO: "031-369-2114", AED_MANUFACTURE: "CU메디칼", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
+            { INSTL_PLC_NM: "동탄역", INSTL_ADDR: "경기도 화성시 동탄대로 400", SIGUN_NM: "화성시", MNG_INST_TEL_NO: "1544-7788", AED_MANUFACTURE: "하트가드", WKDAY_BG_TIME: "05:30", WKDAY_CLOS_TIME: "24:00" },
+            { INSTL_PLC_NM: "고양시청", INSTL_ADDR: "경기도 고양시 덕양구 고양대로 1955", SIGUN_NM: "고양시", MNG_INST_TEL_NO: "031-909-9000", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "00:00", WKDAY_CLOS_TIME: "24:00" },
+            { INSTL_PLC_NM: "킨텍스", INSTL_ADDR: "경기도 고양시 일산서구 킨텍스로 217-60", SIGUN_NM: "고양시", MNG_INST_TEL_NO: "031-810-8114", AED_MANUFACTURE: "메디아나", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
+            { INSTL_PLC_NM: "남양주시청", INSTL_ADDR: "경기도 남양주시 금강로 47", SIGUN_NM: "남양주시", MNG_INST_TEL_NO: "031-590-2114", AED_MANUFACTURE: "CU메디칼", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
+            { INSTL_PLC_NM: "평택시청", INSTL_ADDR: "경기도 평택시 경기대로 245", SIGUN_NM: "평택시", MNG_INST_TEL_NO: "031-8024-2114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "00:00", WKDAY_CLOS_TIME: "24:00" },
+            { INSTL_PLC_NM: "평택역", INSTL_ADDR: "경기도 평택시 평택로 67", SIGUN_NM: "평택시", MNG_INST_TEL_NO: "1544-7788", AED_MANUFACTURE: "하트가드", WKDAY_BG_TIME: "05:00", WKDAY_CLOS_TIME: "24:00" },
+            { INSTL_PLC_NM: "안양시청", INSTL_ADDR: "경기도 안양시 만안구 안양7동 604-12", SIGUN_NM: "안양시", MNG_INST_TEL_NO: "031-8045-5000", AED_MANUFACTURE: "메디아나", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
+            { INSTL_PLC_NM: "의정부시청", INSTL_ADDR: "경기도 의정부시 시민로 1", SIGUN_NM: "의정부시", MNG_INST_TEL_NO: "031-828-2114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "00:00", WKDAY_CLOS_TIME: "24:00" },
+            { INSTL_PLC_NM: "시흥시청", INSTL_ADDR: "경기도 시흥시 시청로 20", SIGUN_NM: "시흥시", MNG_INST_TEL_NO: "031-310-2114", AED_MANUFACTURE: "CU메디칼", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
+            { INSTL_PLC_NM: "파주시청", INSTL_ADDR: "경기도 파주시 시청로 50", SIGUN_NM: "파주시", MNG_INST_TEL_NO: "031-940-4114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
+            { INSTL_PLC_NM: "김포시청", INSTL_ADDR: "경기도 김포시 사우중로 1", SIGUN_NM: "김포시", MNG_INST_TEL_NO: "031-980-2114", AED_MANUFACTURE: "하트가드", WKDAY_BG_TIME: "00:00", WKDAY_CLOS_TIME: "24:00" },
+            { INSTL_PLC_NM: "광주시청", INSTL_ADDR: "경기도 광주시 행정타운로 50", SIGUN_NM: "광주시", MNG_INST_TEL_NO: "031-760-2114", AED_MANUFACTURE: "메디아나", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
+            { INSTL_PLC_NM: "광명시청", INSTL_ADDR: "경기도 광명시 시청로 20", SIGUN_NM: "광명시", MNG_INST_TEL_NO: "02-2680-2114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "00:00", WKDAY_CLOS_TIME: "24:00" },
+            { INSTL_PLC_NM: "군포시청", INSTL_ADDR: "경기도 군포시 청백리길 6", SIGUN_NM: "군포시", MNG_INST_TEL_NO: "031-390-0114", AED_MANUFACTURE: "CU메디칼", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
+            { INSTL_PLC_NM: "하남시청", INSTL_ADDR: "경기도 하남시 대청로 10", SIGUN_NM: "하남시", MNG_INST_TEL_NO: "031-790-5114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
+            { INSTL_PLC_NM: "스타필드 하남", INSTL_ADDR: "경기도 하남시 미사대로 750", SIGUN_NM: "하남시", MNG_INST_TEL_NO: "031-8072-8000", AED_MANUFACTURE: "하트가드", WKDAY_BG_TIME: "10:00", WKDAY_CLOS_TIME: "22:00" },
+            { INSTL_PLC_NM: "오산시청", INSTL_ADDR: "경기도 오산시 성호대로 141", SIGUN_NM: "오산시", MNG_INST_TEL_NO: "031-8036-7114", AED_MANUFACTURE: "메디아나", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
+            { INSTL_PLC_NM: "이천시청", INSTL_ADDR: "경기도 이천시 부악로 40", SIGUN_NM: "이천시", MNG_INST_TEL_NO: "031-644-2114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
+            { INSTL_PLC_NM: "안성시청", INSTL_ADDR: "경기도 안성시 시청길 25", SIGUN_NM: "안성시", MNG_INST_TEL_NO: "031-678-2114", AED_MANUFACTURE: "CU메디칼", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
+            { INSTL_PLC_NM: "의왕시청", INSTL_ADDR: "경기도 의왕시 시청로 11", SIGUN_NM: "의왕시", MNG_INST_TEL_NO: "031-345-2114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
+            { INSTL_PLC_NM: "양주시청", INSTL_ADDR: "경기도 양주시 부흥로 1533", SIGUN_NM: "양주시", MNG_INST_TEL_NO: "031-8082-5114", AED_MANUFACTURE: "하트가드", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
+            { INSTL_PLC_NM: "포천시청", INSTL_ADDR: "경기도 포천시 중앙로 66", SIGUN_NM: "포천시", MNG_INST_TEL_NO: "031-538-2114", AED_MANUFACTURE: "메디아나", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
+            { INSTL_PLC_NM: "여주시청", INSTL_ADDR: "경기도 여주시 세종로 1", SIGUN_NM: "여주시", MNG_INST_TEL_NO: "031-887-2114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
+            { INSTL_PLC_NM: "동두천시청", INSTL_ADDR: "경기도 동두천시 방죽로 90", SIGUN_NM: "동두천시", MNG_INST_TEL_NO: "031-860-2114", AED_MANUFACTURE: "CU메디칼", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
+            { INSTL_PLC_NM: "과천시청", INSTL_ADDR: "경기도 과천시 관악산로 69", SIGUN_NM: "과천시", MNG_INST_TEL_NO: "02-3677-2114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "00:00", WKDAY_CLOS_TIME: "24:00" },
+            { INSTL_PLC_NM: "서울랜드", INSTL_ADDR: "경기도 과천시 광명로 181", SIGUN_NM: "과천시", MNG_INST_TEL_NO: "02-509-6000", AED_MANUFACTURE: "하트가드", WKDAY_BG_TIME: "10:00", WKDAY_CLOS_TIME: "21:00" },
+            { INSTL_PLC_NM: "구리시청", INSTL_ADDR: "경기도 구리시 아차산로 439", SIGUN_NM: "구리시", MNG_INST_TEL_NO: "031-550-2114", AED_MANUFACTURE: "메디아나", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
+            { INSTL_PLC_NM: "양평군청", INSTL_ADDR: "경기도 양평군 양평읍 군청앞길 2", SIGUN_NM: "양평군", MNG_INST_TEL_NO: "031-770-2114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
+            { INSTL_PLC_NM: "가평군청", INSTL_ADDR: "경기도 가평군 가평읍 석봉로 1", SIGUN_NM: "가평군", MNG_INST_TEL_NO: "031-580-2114", AED_MANUFACTURE: "CU메디칼", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
+            { INSTL_PLC_NM: "연천군청", INSTL_ADDR: "경기도 연천군 연천읍 연천로 220", SIGUN_NM: "연천군", MNG_INST_TEL_NO: "031-839-2114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" }
+        ];
         
         // 떨어지는 하트 생성
         function createFallingHearts() {
@@ -699,43 +750,67 @@
             loading.classList.add('active');
             resultsContainer.style.display = 'none';
 
-            try {
-                // API 호출 (최대 1000건)
-                const url = `${API_URL}?KEY=${API_KEY}&Type=json&pIndex=1&pSize=1000`;
-                
-                const response = await fetch(url);
-                const data = await response.json();
-                
-                let aedList = [];
-                
-                if (data.Aedinstal && data.Aedinstal[1] && data.Aedinstal[1].row) {
-                    aedList = data.Aedinstal[1].row;
-                }
+            let aedList = [];
+            let apiSuccess = false;
 
-                // 검색어로 필터링
-                const filteredList = aedList.filter(item => {
-                    const searchFields = [
-                        item.INSTL_ADDR || '',
-                        item.INSTL_PLC_NM || '',
-                        item.SIGUN_NM || '',
-                        item.ORG_NM || ''
-                    ].join(' ').toLowerCase();
+            // API 호출 시도 (여러 프록시 시도)
+            for (const proxy of CORS_PROXIES) {
+                if (apiSuccess) break;
+                
+                try {
+                    const apiUrl = `${API_URL}?KEY=${API_KEY}&Type=json&pIndex=1&pSize=1000`;
+                    const url = proxy ? proxy + encodeURIComponent(apiUrl) : apiUrl;
                     
-                    return searchFields.includes(searchTerm.toLowerCase());
-                });
-
-                displayResults(filteredList, searchTerm);
-                
-            } catch (error) {
-                console.error('Error:', error);
-                alert('😢 데이터를 불러오는데 실패했어요! 다시 시도해주세요!');
-            } finally {
-                loading.classList.remove('active');
+                    console.log('🔍 API 호출 시도:', url);
+                    
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    console.log('📦 API 응답:', data);
+                    
+                    if (data.Aedinstal && data.Aedinstal[1] && data.Aedinstal[1].row) {
+                        aedList = data.Aedinstal[1].row;
+                        apiSuccess = true;
+                        console.log('✅ API 성공! 데이터 수:', aedList.length);
+                    }
+                } catch (error) {
+                    console.log('❌ 프록시 실패:', proxy || '직접호출', error.message);
+                }
             }
+
+            // API 실패 시 샘플 데이터 사용
+            if (!apiSuccess || aedList.length === 0) {
+                console.log('📋 샘플 데이터 사용');
+                aedList = SAMPLE_DATA;
+            }
+
+            // 검색어로 필터링
+            const filteredList = aedList.filter(item => {
+                const searchFields = [
+                    item.INSTL_ADDR || '',
+                    item.INSTL_PLC_NM || '',
+                    item.SIGUN_NM || '',
+                    item.ORG_NM || ''
+                ].join(' ').toLowerCase();
+                
+                return searchFields.includes(searchTerm.toLowerCase());
+            });
+
+            displayResults(filteredList, searchTerm, !apiSuccess);
+            loading.classList.remove('active');
         }
 
         // 결과 표시
-        function displayResults(data, searchTerm) {
+        function displayResults(data, searchTerm, isSampleData = false) {
             const resultsContainer = document.getElementById('resultsContainer');
             const resultsGrid = document.getElementById('resultsGrid');
             const resultsCount = document.getElementById('resultsCount');
@@ -755,7 +830,11 @@
                 return;
             }
 
-            resultsCount.textContent = `🎉 "${searchTerm}" 검색 결과: ${data.length}개의 AED! 🎉`;
+            let countText = `🎉 "${searchTerm}" 검색 결과: ${data.length}개의 AED! 🎉`;
+            if (isSampleData) {
+                countText += ' (샘플 데이터)';
+            }
+            resultsCount.textContent = countText;
 
             data.forEach((item, index) => {
                 const card = document.createElement('div');
