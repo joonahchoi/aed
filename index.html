@@ -1,906 +1,172 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>💓 경기도 AED 찾기 - 생명을 구해요! 💓</title>
-    <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Jua&family=Do+Hyeon&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Jua', sans-serif;
-            background: linear-gradient(135deg, #ff6b6b 0%, #feca57 25%, #48dbfb 50%, #ff9ff3 75%, #54a0ff 100%);
-            background-size: 400% 400%;
-            animation: rainbow 8s ease infinite;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        @keyframes rainbow {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* 떨어지는 하트 애니메이션 */
-        .falling-hearts {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 0;
-            overflow: hidden;
-        }
-
-        .heart {
-            position: absolute;
-            font-size: 30px;
-            animation: fall linear infinite;
-            opacity: 0.7;
-        }
-
-        @keyframes fall {
-            0% {
-                transform: translateY(-100px) rotate(0deg);
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(100vh) rotate(360deg);
-                opacity: 0;
-            }
-        }
-
-        /* 헤더 */
-        .header {
-            background: linear-gradient(45deg, #ff0000, #ff6b6b, #ff0000);
-            background-size: 200% 200%;
-            animation: pulse-bg 1s ease infinite;
-            padding: 30px;
-            text-align: center;
-            position: relative;
-            z-index: 10;
-            box-shadow: 0 10px 30px rgba(255, 0, 0, 0.5);
-        }
-
-        @keyframes pulse-bg {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-
-        .header h1 {
-            font-family: 'Black Han Sans', sans-serif;
-            font-size: 3.5em;
-            color: white;
-            text-shadow: 
-                4px 4px 0 #000,
-                -2px -2px 0 #000,
-                2px -2px 0 #000,
-                -2px 2px 0 #000;
-            animation: bounce 0.5s ease infinite;
-            letter-spacing: 5px;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .header .subtitle {
-            font-family: 'Do Hyeon', sans-serif;
-            font-size: 1.8em;
-            color: #ffff00;
-            text-shadow: 2px 2px 0 #000;
-            margin-top: 10px;
-            animation: blink 1s ease infinite;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        .aed-icon {
-            font-size: 80px;
-            animation: heartbeat 0.8s ease infinite;
-            display: inline-block;
-        }
-
-        @keyframes heartbeat {
-            0%, 100% { transform: scale(1); }
-            25% { transform: scale(1.2); }
-            50% { transform: scale(1); }
-            75% { transform: scale(1.1); }
-        }
-
-        /* 검색 영역 */
-        .search-container {
-            max-width: 900px;
-            margin: 30px auto;
-            padding: 30px;
-            background: white;
-            border-radius: 30px;
-            box-shadow: 
-                0 0 0 8px #ff6b6b,
-                0 0 0 16px #feca57,
-                0 0 0 24px #48dbfb,
-                0 20px 60px rgba(0,0,0,0.3);
-            position: relative;
-            z-index: 10;
-        }
-
-        .search-title {
-            font-family: 'Black Han Sans', sans-serif;
-            font-size: 2em;
-            color: #ff6b6b;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .search-box {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-bottom: 20px;
-        }
-
-        .search-input {
-            flex: 1;
-            min-width: 250px;
-            padding: 20px 25px;
-            font-size: 1.3em;
-            font-family: 'Jua', sans-serif;
-            border: 5px solid #48dbfb;
-            border-radius: 50px;
-            outline: none;
-            transition: all 0.3s;
-        }
-
-        .search-input:focus {
-            border-color: #ff6b6b;
-            box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
-            transform: scale(1.02);
-        }
-
-        .search-btn {
-            padding: 20px 40px;
-            font-size: 1.3em;
-            font-family: 'Black Han Sans', sans-serif;
-            background: linear-gradient(45deg, #ff6b6b, #ff9ff3);
-            color: white;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-shadow: 2px 2px 0 rgba(0,0,0,0.3);
-            box-shadow: 0 8px 0 #c44569;
-        }
-
-        .search-btn:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 13px 0 #c44569;
-        }
-
-        .search-btn:active {
-            transform: translateY(3px);
-            box-shadow: 0 3px 0 #c44569;
-        }
-
-        /* 시/군 선택 버튼들 */
-        .city-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 20px;
-        }
-
-        .city-btn {
-            padding: 12px 20px;
-            font-family: 'Jua', sans-serif;
-            font-size: 1em;
-            background: linear-gradient(135deg, #a29bfe, #74b9ff);
-            color: white;
-            border: 3px solid white;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 3px 3px 0 #5f27cd;
-        }
-
-        .city-btn:hover {
-            transform: rotate(-3deg) scale(1.1);
-            background: linear-gradient(135deg, #fd79a8, #e84393);
-        }
-
-        /* 로딩 */
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 50px;
-        }
-
-        .loading.active {
-            display: block;
-        }
-
-        .loading-spinner {
-            font-size: 100px;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .loading-text {
-            font-family: 'Black Han Sans', sans-serif;
-            font-size: 2em;
-            color: #ff6b6b;
-            margin-top: 20px;
-            animation: blink 0.5s ease infinite;
-        }
-
-        /* 결과 영역 */
-        .results-container {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 0 20px;
-            position: relative;
-            z-index: 10;
-        }
-
-        .results-header {
-            background: linear-gradient(45deg, #00b894, #00cec9);
-            padding: 20px 30px;
-            border-radius: 20px 20px 0 0;
-            text-align: center;
-        }
-
-        .results-count {
-            font-family: 'Black Han Sans', sans-serif;
-            font-size: 2em;
-            color: white;
-            text-shadow: 3px 3px 0 rgba(0,0,0,0.3);
-        }
-
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 20px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 0 0 20px 20px;
-        }
-
-        /* AED 카드 */
-        .aed-card {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            border: 4px solid;
-            border-image: linear-gradient(45deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3) 1;
-            transition: all 0.3s;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .aed-card::before {
-            content: '❤️';
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            font-size: 30px;
-            animation: heartbeat 1s ease infinite;
-        }
-
-        .aed-card:hover {
-            transform: translateY(-10px) rotate(1deg);
-            box-shadow: 0 20px 40px rgba(255, 107, 107, 0.4);
-        }
-
-        .card-title {
-            font-family: 'Black Han Sans', sans-serif;
-            font-size: 1.4em;
-            color: #2d3436;
-            margin-bottom: 15px;
-            padding-right: 40px;
-        }
-
-        .card-info {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            margin: 10px 0;
-            font-size: 1em;
-            color: #636e72;
-        }
-
-        .card-info-icon {
-            font-size: 1.3em;
-            min-width: 30px;
-        }
-
-        .card-tag {
-            display: inline-block;
-            padding: 5px 15px;
-            background: linear-gradient(45deg, #fd79a8, #e84393);
-            color: white;
-            border-radius: 20px;
-            font-size: 0.9em;
-            margin: 5px 5px 5px 0;
-        }
-
-        .card-tag.available {
-            background: linear-gradient(45deg, #00b894, #00cec9);
-        }
-
-        /* 없을 때 */
-        .no-results {
-            text-align: center;
-            padding: 60px;
-            background: white;
-            border-radius: 30px;
-            margin: 30px auto;
-            max-width: 600px;
-        }
-
-        .no-results-icon {
-            font-size: 100px;
-            animation: shake 0.5s ease infinite;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-10px); }
-            75% { transform: translateX(10px); }
-        }
-
-        .no-results-text {
-            font-family: 'Black Han Sans', sans-serif;
-            font-size: 2em;
-            color: #ff6b6b;
-            margin-top: 20px;
-        }
-
-        /* 안내 박스 */
-        .info-box {
-            max-width: 900px;
-            margin: 30px auto;
-            padding: 30px;
-            background: linear-gradient(135deg, #fff9c4, #ffe082);
-            border-radius: 20px;
-            border: 5px dashed #ff9800;
-            position: relative;
-            z-index: 10;
-        }
-
-        .info-box h3 {
-            font-family: 'Black Han Sans', sans-serif;
-            font-size: 1.8em;
-            color: #e65100;
-            margin-bottom: 15px;
-        }
-
-        .info-box ul {
-            list-style: none;
-            padding: 0;
-        }
-
-        .info-box li {
-            padding: 10px 0;
-            font-size: 1.2em;
-            color: #5d4037;
-            border-bottom: 2px dashed #ffcc80;
-        }
-
-        .info-box li:last-child {
-            border-bottom: none;
-        }
-
-        .info-box li::before {
-            content: '⚡ ';
-        }
-
-        /* 푸터 */
-        .footer {
-            background: #2d3436;
-            padding: 30px;
-            text-align: center;
-            position: relative;
-            z-index: 10;
-        }
-
-        .footer p {
-            color: white;
-            font-size: 1.2em;
-        }
-
-        .footer .emoji-line {
-            font-size: 2em;
-            animation: wave 2s ease infinite;
-        }
-
-        @keyframes wave {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        /* 긴급 버튼 */
-        .emergency-btn {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(45deg, #ff0000, #ff6b6b);
-            border: 5px solid white;
-            border-radius: 50%;
-            font-size: 35px;
-            cursor: pointer;
-            z-index: 1000;
-            animation: pulse 1s ease infinite;
-            box-shadow: 0 5px 30px rgba(255, 0, 0, 0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); box-shadow: 0 5px 30px rgba(255, 0, 0, 0.6); }
-            50% { transform: scale(1.1); box-shadow: 0 5px 50px rgba(255, 0, 0, 0.8); }
-        }
-
-        .emergency-btn:hover {
-            animation: none;
-            transform: scale(1.2);
-        }
-
-        /* 모달 */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 40px;
-            border-radius: 30px;
-            max-width: 500px;
-            text-align: center;
-            animation: modalIn 0.5s ease;
-            border: 8px solid #ff0000;
-        }
-
-        @keyframes modalIn {
-            from { transform: scale(0) rotate(-180deg); opacity: 0; }
-            to { transform: scale(1) rotate(0); opacity: 1; }
-        }
-
-        .modal-content h2 {
-            font-family: 'Black Han Sans', sans-serif;
-            font-size: 2.5em;
-            color: #ff0000;
-            margin-bottom: 20px;
-        }
-
-        .modal-content .emergency-number {
-            font-family: 'Black Han Sans', sans-serif;
-            font-size: 4em;
-            color: #ff0000;
-            animation: blink 0.5s ease infinite;
-        }
-
-        .modal-content p {
-            font-size: 1.3em;
-            color: #666;
-            margin: 20px 0;
-        }
-
-        .modal-close {
-            padding: 15px 40px;
-            font-family: 'Black Han Sans', sans-serif;
-            font-size: 1.3em;
-            background: #2d3436;
-            color: white;
-            border: none;
-            border-radius: 30px;
-            cursor: pointer;
-        }
-
-        /* 반응형 */
-        @media (max-width: 768px) {
-            .header h1 {
-                font-size: 2em;
-            }
-            .header .subtitle {
-                font-size: 1.2em;
-            }
-            .aed-icon {
-                font-size: 50px;
-            }
-            .search-container {
-                margin: 20px 15px;
-                padding: 20px;
-            }
-            .results-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AED 찾기! (준범이와 현빈이)</title>
+
+<style>
+    body {
+        font-family: comic sans ms, sans-serif;
+        background: #ffe66d;
+        margin: 0;
+        padding: 0;
+        text-align: center;
+    }
+
+    h1 {
+        background: #ff6b6b;
+        color: white;
+        padding: 20px;
+        margin: 0;
+        font-size: 32px;
+        text-shadow: 2px 2px 0px black;
+    }
+
+    #findBtn {
+        margin-top: 20px;
+        padding: 15px 25px;
+        font-size: 22px;
+        background: #1dd1a1;
+        border: none;
+        border-radius: 10px;
+        color: white;
+        cursor: pointer;
+        font-weight: bold;
+        box-shadow: 3px 3px 0px black;
+    }
+    #findBtn:hover {
+        background: #10ac84;
+    }
+
+    #result {
+        margin: 20px;
+        text-align: left;
+        padding: 10px;
+    }
+
+    .card {
+        background: white;
+        margin: 10px 0;
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 3px 3px 0px black;
+        border-left: 10px solid #ff6b6b;
+    }
+
+    .loading {
+        font-size: 24px;
+        margin-top: 20px;
+        animation: blink 1s infinite alternate;
+    }
+
+    @keyframes blink {
+        0% { opacity: 0.2; }
+        100% { opacity: 1; }
+    }
+</style>
 </head>
+
 <body>
-    <!-- 떨어지는 하트 -->
-    <div class="falling-hearts" id="hearts"></div>
 
-    <!-- 헤더 -->
-    <header class="header">
-        <div class="aed-icon">💓</div>
-        <h1>경기도 AED 찾기</h1>
-        <p class="subtitle">⚡ 심장이 멈추면 4분이 골든타임! ⚡</p>
-    </header>
+<h1>🔥 내 주변 AED 찾기 🔥<br><small>경기도 데이터 기반</small></h1>
 
-    <!-- 검색 영역 -->
-    <div class="search-container">
-        <h2 class="search-title">🔍 내 주변 AED를 찾아보세요! 🔍</h2>
-        <div class="search-box">
-            <input type="text" class="search-input" id="searchInput" placeholder="장소명, 주소로 검색하세요!">
-            <button class="search-btn" onclick="searchAED()">🚀 검색하기!</button>
-        </div>
-        <p style="text-align: center; color: #888; margin: 15px 0;">👇 또는 도시를 선택하세요! 👇</p>
-        <div class="city-buttons">
-            <button class="city-btn" onclick="searchByCity('수원시')">🏙️ 수원시</button>
-            <button class="city-btn" onclick="searchByCity('성남시')">🌆 성남시</button>
-            <button class="city-btn" onclick="searchByCity('용인시')">🌳 용인시</button>
-            <button class="city-btn" onclick="searchByCity('부천시')">🎭 부천시</button>
-            <button class="city-btn" onclick="searchByCity('안산시')">🌊 안산시</button>
-            <button class="city-btn" onclick="searchByCity('화성시')">🚀 화성시</button>
-            <button class="city-btn" onclick="searchByCity('고양시')">🏔️ 고양시</button>
-            <button class="city-btn" onclick="searchByCity('남양주시')">🌿 남양주시</button>
-            <button class="city-btn" onclick="searchByCity('평택시')">⚓ 평택시</button>
-            <button class="city-btn" onclick="searchByCity('안양시')">🎨 안양시</button>
-            <button class="city-btn" onclick="searchByCity('시흥시')">🏭 시흥시</button>
-            <button class="city-btn" onclick="searchByCity('파주시')">🌾 파주시</button>
-            <button class="city-btn" onclick="searchByCity('의정부시')">🎖️ 의정부시</button>
-            <button class="city-btn" onclick="searchByCity('김포시')">✈️ 김포시</button>
-            <button class="city-btn" onclick="searchByCity('광주시')">🌸 광주시</button>
-            <button class="city-btn" onclick="searchByCity('광명시')">💡 광명시</button>
-            <button class="city-btn" onclick="searchByCity('군포시')">🏢 군포시</button>
-            <button class="city-btn" onclick="searchByCity('하남시')">🏞️ 하남시</button>
-            <button class="city-btn" onclick="searchByCity('오산시')">🎯 오산시</button>
-            <button class="city-btn" onclick="searchByCity('이천시')">🍚 이천시</button>
-            <button class="city-btn" onclick="searchByCity('안성시')">🐂 안성시</button>
-            <button class="city-btn" onclick="searchByCity('의왕시')">🚃 의왕시</button>
-            <button class="city-btn" onclick="searchByCity('양주시')">🏯 양주시</button>
-            <button class="city-btn" onclick="searchByCity('포천시')">⛰️ 포천시</button>
-            <button class="city-btn" onclick="searchByCity('여주시')">👑 여주시</button>
-            <button class="city-btn" onclick="searchByCity('동두천시')">🪖 동두천시</button>
-            <button class="city-btn" onclick="searchByCity('과천시')">🐴 과천시</button>
-            <button class="city-btn" onclick="searchByCity('구리시')">🌉 구리시</button>
-            <button class="city-btn" onclick="searchByCity('양평군')">🏕️ 양평군</button>
-            <button class="city-btn" onclick="searchByCity('가평군')">🎿 가평군</button>
-            <button class="city-btn" onclick="searchByCity('연천군')">🦅 연천군</button>
-        </div>
-    </div>
+<button id="findBtn">📡 내 주변에서 AED 찾기!</button>
 
-    <!-- 로딩 -->
-    <div class="loading" id="loading">
-        <div class="loading-spinner">💓</div>
-        <p class="loading-text">AED를 찾고 있어요...!</p>
-    </div>
+<div id="status" class="loading"></div>
+<div id="result"></div>
 
-    <!-- 결과 영역 -->
-    <div class="results-container" id="resultsContainer" style="display: none;">
-        <div class="results-header">
-            <p class="results-count" id="resultsCount">🎉 총 0개의 AED를 찾았어요! 🎉</p>
-        </div>
-        <div class="results-grid" id="resultsGrid">
-            <!-- 결과 카드들이 여기에 들어감 -->
-        </div>
-    </div>
+<script>
+// ---------------------------
+// 거리 계산 함수 (Haversine)
+// ---------------------------
+function getDistance(lat1, lon1, lat2, lon2) {
+    function deg2rad(d) { return d * (Math.PI / 180); }
+    const R = 6371; // km
+    const dLat = deg2rad(lat2 - lat1);
+    const dLon = deg2rad(lon2 - lon1);
+    const a =
+        Math.sin(dLat/2)**2 +
+        Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+        Math.sin(dLon/2)**2;
 
-    <!-- 안내 박스 -->
-    <div class="info-box">
-        <h3>💡 AED 사용법을 알아두세요!</h3>
-        <ul>
-            <li>전원을 켜면 음성 안내가 나와요!</li>
-            <li>패드를 환자 가슴에 부착해요!</li>
-            <li>기계가 알아서 심장 리듬을 분석해요!</li>
-            <li>"충격 버튼을 누르세요" 안내가 나오면 버튼을 눌러요!</li>
-            <li>누구나 사용할 수 있어요! 겁먹지 마세요! 💪</li>
-        </ul>
-    </div>
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
-    <!-- 푸터 -->
-    <footer class="footer">
-        <p class="emoji-line">💓 🏥 🚑 ⚡ 💓</p>
-        <p>경기도 자동제세동기(AED) 설치 현황 데이터 활용</p>
-        <p style="font-size: 0.9em; color: #aaa; margin-top: 10px;">Made with ❤️ for saving lives!</p>
-    </footer>
+// ---------------------------
+// AED 데이터 가져오기
+// ---------------------------
+async function fetchAED() {
+    const url =
+        `https://openapi.gg.go.kr/Publtolt?KEY=b8d51375948e422eb4d6c7b0a38b1cbc&Type=json&pIndex=1&pSize=1000`;
 
-    <!-- 긴급 버튼 -->
-    <button class="emergency-btn" onclick="showEmergency()">📞</button>
+    const res = await fetch(url);
+    const json = await res.json();
+    return json.Publtolt[1].row;
+}
 
-    <!-- 긴급 모달 -->
-    <div class="modal" id="emergencyModal">
-        <div class="modal-content">
-            <h2>🚨 응급상황 발생?! 🚨</h2>
-            <p class="emergency-number">119</p>
-            <p>심정지 환자를 발견하면<br>즉시 119에 신고하세요!</p>
-            <p style="font-size: 1em; color: #ff6b6b;">⚡ 4분 안에 AED 사용이 중요해요! ⚡</p>
-            <button class="modal-close" onclick="closeEmergency()">닫기</button>
-        </div>
-    </div>
+// ---------------------------
+// 메인 기능: 내 위치 기반 검색
+// ---------------------------
+document.getElementById("findBtn").onclick = function () {
+    const status = document.getElementById("status");
+    const result = document.getElementById("result");
 
-    <script>
-        // API 키 및 설정
-        const API_KEY = 'b8d51375948e422eb4d6c7b0a38b1cbc';
-        // 경기데이터드림 API URL
-        const API_URL = 'https://openapi.gg.go.kr/Aedinstal';
-        
-        // CORS 프록시 목록 (브라우저에서 직접 API 호출 시 CORS 문제 해결용)
-        const CORS_PROXIES = [
-            'https://corsproxy.io/?',
-            'https://api.allorigins.win/raw?url=',
-            ''  // 직접 호출 시도
-        ];
+    status.innerHTML = "📍 위치 찾는 중...";
+    result.innerHTML = "";
 
-        // 샘플 데이터 (API 실패 시 사용)
-        const SAMPLE_DATA = [
-            { INSTL_PLC_NM: "수원시청", INSTL_ADDR: "경기도 수원시 팔달구 효원로 241", SIGUN_NM: "수원시", MNG_INST_TEL_NO: "031-228-2114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "00:00", WKDAY_CLOS_TIME: "24:00" },
-            { INSTL_PLC_NM: "수원역", INSTL_ADDR: "경기도 수원시 팔달구 덕영대로 924", SIGUN_NM: "수원시", MNG_INST_TEL_NO: "1544-7788", AED_MANUFACTURE: "메디아나", WKDAY_BG_TIME: "05:00", WKDAY_CLOS_TIME: "24:00" },
-            { INSTL_PLC_NM: "성남시청", INSTL_ADDR: "경기도 성남시 중원구 성남대로 997", SIGUN_NM: "성남시", MNG_INST_TEL_NO: "031-729-2114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
-            { INSTL_PLC_NM: "판교역", INSTL_ADDR: "경기도 성남시 분당구 판교역로 160", SIGUN_NM: "성남시", MNG_INST_TEL_NO: "031-8018-7777", AED_MANUFACTURE: "하트가드", WKDAY_BG_TIME: "05:30", WKDAY_CLOS_TIME: "24:00" },
-            { INSTL_PLC_NM: "용인시청", INSTL_ADDR: "경기도 용인시 처인구 중부대로 1199", SIGUN_NM: "용인시", MNG_INST_TEL_NO: "031-324-2114", AED_MANUFACTURE: "CU메디칼", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
-            { INSTL_PLC_NM: "에버랜드", INSTL_ADDR: "경기도 용인시 처인구 포곡읍 에버랜드로 199", SIGUN_NM: "용인시", MNG_INST_TEL_NO: "031-320-5000", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "10:00", WKDAY_CLOS_TIME: "22:00" },
-            { INSTL_PLC_NM: "부천시청", INSTL_ADDR: "경기도 부천시 길주로 210", SIGUN_NM: "부천시", MNG_INST_TEL_NO: "032-625-2114", AED_MANUFACTURE: "메디아나", WKDAY_BG_TIME: "00:00", WKDAY_CLOS_TIME: "24:00" },
-            { INSTL_PLC_NM: "안산시청", INSTL_ADDR: "경기도 안산시 단원구 화랑로 387", SIGUN_NM: "안산시", MNG_INST_TEL_NO: "031-481-2114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
-            { INSTL_PLC_NM: "화성시청", INSTL_ADDR: "경기도 화성시 남양읍 시청로 159", SIGUN_NM: "화성시", MNG_INST_TEL_NO: "031-369-2114", AED_MANUFACTURE: "CU메디칼", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
-            { INSTL_PLC_NM: "동탄역", INSTL_ADDR: "경기도 화성시 동탄대로 400", SIGUN_NM: "화성시", MNG_INST_TEL_NO: "1544-7788", AED_MANUFACTURE: "하트가드", WKDAY_BG_TIME: "05:30", WKDAY_CLOS_TIME: "24:00" },
-            { INSTL_PLC_NM: "고양시청", INSTL_ADDR: "경기도 고양시 덕양구 고양대로 1955", SIGUN_NM: "고양시", MNG_INST_TEL_NO: "031-909-9000", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "00:00", WKDAY_CLOS_TIME: "24:00" },
-            { INSTL_PLC_NM: "킨텍스", INSTL_ADDR: "경기도 고양시 일산서구 킨텍스로 217-60", SIGUN_NM: "고양시", MNG_INST_TEL_NO: "031-810-8114", AED_MANUFACTURE: "메디아나", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
-            { INSTL_PLC_NM: "남양주시청", INSTL_ADDR: "경기도 남양주시 금강로 47", SIGUN_NM: "남양주시", MNG_INST_TEL_NO: "031-590-2114", AED_MANUFACTURE: "CU메디칼", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
-            { INSTL_PLC_NM: "평택시청", INSTL_ADDR: "경기도 평택시 경기대로 245", SIGUN_NM: "평택시", MNG_INST_TEL_NO: "031-8024-2114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "00:00", WKDAY_CLOS_TIME: "24:00" },
-            { INSTL_PLC_NM: "평택역", INSTL_ADDR: "경기도 평택시 평택로 67", SIGUN_NM: "평택시", MNG_INST_TEL_NO: "1544-7788", AED_MANUFACTURE: "하트가드", WKDAY_BG_TIME: "05:00", WKDAY_CLOS_TIME: "24:00" },
-            { INSTL_PLC_NM: "안양시청", INSTL_ADDR: "경기도 안양시 만안구 안양7동 604-12", SIGUN_NM: "안양시", MNG_INST_TEL_NO: "031-8045-5000", AED_MANUFACTURE: "메디아나", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
-            { INSTL_PLC_NM: "의정부시청", INSTL_ADDR: "경기도 의정부시 시민로 1", SIGUN_NM: "의정부시", MNG_INST_TEL_NO: "031-828-2114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "00:00", WKDAY_CLOS_TIME: "24:00" },
-            { INSTL_PLC_NM: "시흥시청", INSTL_ADDR: "경기도 시흥시 시청로 20", SIGUN_NM: "시흥시", MNG_INST_TEL_NO: "031-310-2114", AED_MANUFACTURE: "CU메디칼", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
-            { INSTL_PLC_NM: "파주시청", INSTL_ADDR: "경기도 파주시 시청로 50", SIGUN_NM: "파주시", MNG_INST_TEL_NO: "031-940-4114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
-            { INSTL_PLC_NM: "김포시청", INSTL_ADDR: "경기도 김포시 사우중로 1", SIGUN_NM: "김포시", MNG_INST_TEL_NO: "031-980-2114", AED_MANUFACTURE: "하트가드", WKDAY_BG_TIME: "00:00", WKDAY_CLOS_TIME: "24:00" },
-            { INSTL_PLC_NM: "광주시청", INSTL_ADDR: "경기도 광주시 행정타운로 50", SIGUN_NM: "광주시", MNG_INST_TEL_NO: "031-760-2114", AED_MANUFACTURE: "메디아나", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
-            { INSTL_PLC_NM: "광명시청", INSTL_ADDR: "경기도 광명시 시청로 20", SIGUN_NM: "광명시", MNG_INST_TEL_NO: "02-2680-2114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "00:00", WKDAY_CLOS_TIME: "24:00" },
-            { INSTL_PLC_NM: "군포시청", INSTL_ADDR: "경기도 군포시 청백리길 6", SIGUN_NM: "군포시", MNG_INST_TEL_NO: "031-390-0114", AED_MANUFACTURE: "CU메디칼", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
-            { INSTL_PLC_NM: "하남시청", INSTL_ADDR: "경기도 하남시 대청로 10", SIGUN_NM: "하남시", MNG_INST_TEL_NO: "031-790-5114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
-            { INSTL_PLC_NM: "스타필드 하남", INSTL_ADDR: "경기도 하남시 미사대로 750", SIGUN_NM: "하남시", MNG_INST_TEL_NO: "031-8072-8000", AED_MANUFACTURE: "하트가드", WKDAY_BG_TIME: "10:00", WKDAY_CLOS_TIME: "22:00" },
-            { INSTL_PLC_NM: "오산시청", INSTL_ADDR: "경기도 오산시 성호대로 141", SIGUN_NM: "오산시", MNG_INST_TEL_NO: "031-8036-7114", AED_MANUFACTURE: "메디아나", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
-            { INSTL_PLC_NM: "이천시청", INSTL_ADDR: "경기도 이천시 부악로 40", SIGUN_NM: "이천시", MNG_INST_TEL_NO: "031-644-2114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
-            { INSTL_PLC_NM: "안성시청", INSTL_ADDR: "경기도 안성시 시청길 25", SIGUN_NM: "안성시", MNG_INST_TEL_NO: "031-678-2114", AED_MANUFACTURE: "CU메디칼", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
-            { INSTL_PLC_NM: "의왕시청", INSTL_ADDR: "경기도 의왕시 시청로 11", SIGUN_NM: "의왕시", MNG_INST_TEL_NO: "031-345-2114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
-            { INSTL_PLC_NM: "양주시청", INSTL_ADDR: "경기도 양주시 부흥로 1533", SIGUN_NM: "양주시", MNG_INST_TEL_NO: "031-8082-5114", AED_MANUFACTURE: "하트가드", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
-            { INSTL_PLC_NM: "포천시청", INSTL_ADDR: "경기도 포천시 중앙로 66", SIGUN_NM: "포천시", MNG_INST_TEL_NO: "031-538-2114", AED_MANUFACTURE: "메디아나", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
-            { INSTL_PLC_NM: "여주시청", INSTL_ADDR: "경기도 여주시 세종로 1", SIGUN_NM: "여주시", MNG_INST_TEL_NO: "031-887-2114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
-            { INSTL_PLC_NM: "동두천시청", INSTL_ADDR: "경기도 동두천시 방죽로 90", SIGUN_NM: "동두천시", MNG_INST_TEL_NO: "031-860-2114", AED_MANUFACTURE: "CU메디칼", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
-            { INSTL_PLC_NM: "과천시청", INSTL_ADDR: "경기도 과천시 관악산로 69", SIGUN_NM: "과천시", MNG_INST_TEL_NO: "02-3677-2114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "00:00", WKDAY_CLOS_TIME: "24:00" },
-            { INSTL_PLC_NM: "서울랜드", INSTL_ADDR: "경기도 과천시 광명로 181", SIGUN_NM: "과천시", MNG_INST_TEL_NO: "02-509-6000", AED_MANUFACTURE: "하트가드", WKDAY_BG_TIME: "10:00", WKDAY_CLOS_TIME: "21:00" },
-            { INSTL_PLC_NM: "구리시청", INSTL_ADDR: "경기도 구리시 아차산로 439", SIGUN_NM: "구리시", MNG_INST_TEL_NO: "031-550-2114", AED_MANUFACTURE: "메디아나", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
-            { INSTL_PLC_NM: "양평군청", INSTL_ADDR: "경기도 양평군 양평읍 군청앞길 2", SIGUN_NM: "양평군", MNG_INST_TEL_NO: "031-770-2114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
-            { INSTL_PLC_NM: "가평군청", INSTL_ADDR: "경기도 가평군 가평읍 석봉로 1", SIGUN_NM: "가평군", MNG_INST_TEL_NO: "031-580-2114", AED_MANUFACTURE: "CU메디칼", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" },
-            { INSTL_PLC_NM: "연천군청", INSTL_ADDR: "경기도 연천군 연천읍 연천로 220", SIGUN_NM: "연천군", MNG_INST_TEL_NO: "031-839-2114", AED_MANUFACTURE: "필립스", WKDAY_BG_TIME: "09:00", WKDAY_CLOS_TIME: "18:00" }
-        ];
-        
-        // 떨어지는 하트 생성
-        function createFallingHearts() {
-            const container = document.getElementById('hearts');
-            const hearts = ['❤️', '💓', '💗', '💖', '💕', '💝'];
-            
-            for (let i = 0; i < 20; i++) {
-                const heart = document.createElement('div');
-                heart.className = 'heart';
-                heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
-                heart.style.left = Math.random() * 100 + '%';
-                heart.style.animationDuration = (Math.random() * 5 + 5) + 's';
-                heart.style.animationDelay = Math.random() * 5 + 's';
-                container.appendChild(heart);
-            }
-        }
-        createFallingHearts();
+    navigator.geolocation.getCurrentPosition(async pos => {
+        status.innerHTML = "📡 AED 불러오는 중...";
 
-        // 검색 함수
-        async function searchAED() {
-            const searchTerm = document.getElementById('searchInput').value.trim();
-            if (!searchTerm) {
-                alert('🔍 검색어를 입력해주세요!');
-                return;
-            }
-            await fetchAEDData(searchTerm);
-        }
+        const myLat = pos.coords.latitude;
+        const myLon = pos.coords.longitude;
 
-        // 도시별 검색
-        async function searchByCity(city) {
-            document.getElementById('searchInput').value = city;
-            await fetchAEDData(city);
-        }
+        const data = await fetchAED();
 
-        // API 데이터 가져오기
-        async function fetchAEDData(searchTerm) {
-            const loading = document.getElementById('loading');
-            const resultsContainer = document.getElementById('resultsContainer');
-            
-            loading.classList.add('active');
-            resultsContainer.style.display = 'none';
+        const nearby = [];
 
-            let aedList = [];
-            let apiSuccess = false;
+        data.forEach(aed => {
+            const lat = parseFloat(aed.REFINE_WGS84_LAT);
+            const lon = parseFloat(aed.REFINE_WGS84_LOGT);
 
-            // API 호출 시도 (여러 프록시 시도)
-            for (const proxy of CORS_PROXIES) {
-                if (apiSuccess) break;
-                
-                try {
-                    const apiUrl = `${API_URL}?KEY=${API_KEY}&Type=json&pIndex=1&pSize=1000`;
-                    const url = proxy ? proxy + encodeURIComponent(apiUrl) : apiUrl;
-                    
-                    console.log('🔍 API 호출 시도:', url);
-                    
-                    const response = await fetch(url, {
-                        method: 'GET',
-                        headers: {
-                            'Accept': 'application/json'
-                        }
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}`);
-                    }
-                    
-                    const data = await response.json();
-                    console.log('📦 API 응답:', data);
-                    
-                    if (data.Aedinstal && data.Aedinstal[1] && data.Aedinstal[1].row) {
-                        aedList = data.Aedinstal[1].row;
-                        apiSuccess = true;
-                        console.log('✅ API 성공! 데이터 수:', aedList.length);
-                    }
-                } catch (error) {
-                    console.log('❌ 프록시 실패:', proxy || '직접호출', error.message);
-                }
-            }
+            if (!lat || !lon) return;
 
-            // API 실패 시 샘플 데이터 사용
-            if (!apiSuccess || aedList.length === 0) {
-                console.log('📋 샘플 데이터 사용');
-                aedList = SAMPLE_DATA;
-            }
+            const dist = getDistance(myLat, myLon, lat, lon);
 
-            // 검색어로 필터링
-            const filteredList = aedList.filter(item => {
-                const searchFields = [
-                    item.INSTL_ADDR || '',
-                    item.INSTL_PLC_NM || '',
-                    item.SIGUN_NM || '',
-                    item.ORG_NM || ''
-                ].join(' ').toLowerCase();
-                
-                return searchFields.includes(searchTerm.toLowerCase());
-            });
-
-            displayResults(filteredList, searchTerm, !apiSuccess);
-            loading.classList.remove('active');
-        }
-
-        // 결과 표시
-        function displayResults(data, searchTerm, isSampleData = false) {
-            const resultsContainer = document.getElementById('resultsContainer');
-            const resultsGrid = document.getElementById('resultsGrid');
-            const resultsCount = document.getElementById('resultsCount');
-            
-            resultsGrid.innerHTML = '';
-            
-            if (data.length === 0) {
-                resultsContainer.style.display = 'block';
-                resultsCount.textContent = `😢 "${searchTerm}" 검색 결과가 없어요...`;
-                resultsGrid.innerHTML = `
-                    <div class="no-results" style="grid-column: 1 / -1;">
-                        <div class="no-results-icon">😭</div>
-                        <p class="no-results-text">검색 결과가 없어요!</p>
-                        <p style="color: #888; margin-top: 15px;">다른 검색어로 시도해보세요!</p>
-                    </div>
-                `;
-                return;
-            }
-
-            let countText = `🎉 "${searchTerm}" 검색 결과: ${data.length}개의 AED! 🎉`;
-            if (isSampleData) {
-                countText += ' (샘플 데이터)';
-            }
-            resultsCount.textContent = countText;
-
-            data.forEach((item, index) => {
-                const card = document.createElement('div');
-                card.className = 'aed-card';
-                card.style.animationDelay = `${index * 0.05}s`;
-                
-                // 24시간 여부 확인
-                const is24h = item.WKDAY_BG_TIME === '00:00' && item.WKDAY_CLOS_TIME === '24:00';
-                
-                card.innerHTML = `
-                    <h3 class="card-title">${item.INSTL_PLC_NM || item.ORG_NM || '이름 없음'}</h3>
-                    <div class="card-info">
-                        <span class="card-info-icon">📍</span>
-                        <span>${item.INSTL_ADDR || '주소 정보 없음'}</span>
-                    </div>
-                    <div class="card-info">
-                        <span class="card-info-icon">🏢</span>
-                        <span>${item.SIGUN_NM || '지역 정보 없음'}</span>
-                    </div>
-                    <div class="card-info">
-                        <span class="card-info-icon">📞</span>
-                        <span>${item.MNG_INST_TEL_NO || '전화번호 없음'}</span>
-                    </div>
-                    <div class="card-info">
-                        <span class="card-info-icon">🏭</span>
-                        <span>제조사: ${item.AED_MANUFACTURE || '정보 없음'}</span>
-                    </div>
-                    <div class="card-info">
-                        <span class="card-info-icon">⏰</span>
-                        <span>평일: ${item.WKDAY_BG_TIME || '?'} ~ ${item.WKDAY_CLOS_TIME || '?'}</span>
-                    </div>
-                    <div style="margin-top: 15px;">
-                        ${is24h ? '<span class="card-tag available">🌙 24시간 이용가능</span>' : ''}
-                        <span class="card-tag">${item.SIGUN_NM || '경기도'}</span>
-                    </div>
-                `;
-                
-                resultsGrid.appendChild(card);
-            });
-
-            resultsContainer.style.display = 'block';
-            resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
-        // 긴급 모달
-        function showEmergency() {
-            document.getElementById('emergencyModal').classList.add('active');
-        }
-
-        function closeEmergency() {
-            document.getElementById('emergencyModal').classList.remove('active');
-        }
-
-        // Enter 키로 검색
-        document.getElementById('searchInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                searchAED();
+            if (dist < 3) { // 반경 3km
+                nearby.push({
+                    ...aed,
+                    distance: dist
+                });
             }
         });
 
-        // 모달 외부 클릭 시 닫기
-        document.getElementById('emergencyModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeEmergency();
-            }
+        if (nearby.length === 0) {
+            status.innerHTML = "😢 주변 3km 내 AED 없음";
+            return;
+        }
+
+        status.innerHTML = `✨ 주변 AED ${nearby.length}개 발견!`;
+
+        nearby.sort((a, b) => a.distance - b.distance);
+
+        nearby.forEach(a => {
+            result.innerHTML += `
+                <div class="card">
+                    <b>📍 ${a.BULD_NM || "이름 없음"}</b><br>
+                    주소: ${a.REFINE_ROADNM_ADDR}<br>
+                    운영기관: ${a.MANAGE_INST_NM || "정보 없음"}<br>
+                    전화번호: ${a.MANAGE_INST_TEL || "없음"}<br>
+                    거리: ${a.distance.toFixed(2)} km
+                </div>
+            `;
         });
-    </script>
+
+    }, err => {
+        status.innerHTML = "❗ 위치 권한이 필요합니다!";
+    });
+};
+</script>
+
 </body>
 </html>
