@@ -3,11 +3,19 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>AED 찾기! (준범이와 현빈이)</title>
+<title>AED 찾기! (중학생 버전)</title>
+
+<!-- Leaflet CSS (지도용) -->
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+  crossorigin=""
+/>
 
 <style>
     body {
-        font-family: comic sans ms, sans-serif;
+        font-family: "Comic Sans MS", system-ui, sans-serif;
         background: #ffe66d;
         margin: 0;
         padding: 0;
@@ -21,6 +29,10 @@
         margin: 0;
         font-size: 32px;
         text-shadow: 2px 2px 0px black;
+    }
+
+    h1 small {
+        font-size: 14px;
     }
 
     #findBtn {
@@ -37,6 +49,12 @@
     }
     #findBtn:hover {
         background: #10ac84;
+        transform: translateY(1px);
+    }
+
+    #status {
+        margin-top: 15px;
+        font-size: 18px;
     }
 
     #result {
@@ -52,6 +70,18 @@
         border-radius: 10px;
         box-shadow: 3px 3px 0px black;
         border-left: 10px solid #ff6b6b;
+        line-height: 1.4;
+    }
+
+    .card-title {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 6px;
+    }
+
+    .distance {
+        font-weight: bold;
+        color: #ff6b6b;
     }
 
     .loading {
@@ -64,17 +94,54 @@
         0% { opacity: 0.2; }
         100% { opacity: 1; }
     }
+
+    /* 지도 영역 */
+    #mapContainer {
+        margin: 10px 20px 30px 20px;
+    }
+
+    #mapTitle {
+        font-size: 20px;
+        font-weight: bold;
+        margin: 15px 0 5px 0;
+    }
+
+    #map {
+        width: 100%;
+        height: 320px;
+        border-radius: 10px;
+        box-shadow: 3px 3px 0px black;
+        border: 4px solid #ff6b6b;
+    }
+
+    @media (max-width: 600px) {
+        #map {
+            height: 260px;
+        }
+    }
 </style>
 </head>
 
 <body>
 
-<h1>🔥 내 주변 AED 찾기 🔥<br><small>경기도 데이터 기반</small></h1>
+<h1>🔥 내 주변 AED 찾기 🔥<br><small>경기도 공공데이터 기반</small></h1>
 
 <button id="findBtn">📡 내 주변에서 AED 찾기!</button>
 
 <div id="status" class="loading"></div>
 <div id="result"></div>
+
+<div id="mapContainer" style="display:none;">
+    <div id="mapTitle">🗺 내 주변 AED 지도 보기</div>
+    <div id="map"></div>
+</div>
+
+<!-- Leaflet JS (지도용) -->
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin=""
+></script>
 
 <script>
 // ---------------------------
@@ -86,23 +153,95 @@ function getDistance(lat1, lon1, lat2, lon2) {
     const dLat = deg2rad(lat2 - lat1);
     const dLon = deg2rad(lon2 - lon1);
     const a =
-        Math.sin(dLat/2)**2 +
+        Math.sin(dLat / 2) ** 2 +
         Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
-        Math.sin(dLon/2)**2;
+        Math.sin(dLon / 2) ** 2;
 
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
 // ---------------------------
-// AED 데이터 가져오기
+// AED 데이터 가져오기 (Aedstus 사용)
 // ---------------------------
 async function fetchAED() {
     const url =
-        `https://openapi.gg.go.kr/Publtolt?KEY=b8d51375948e422eb4d6c7b0a38b1cbc&Type=json&pIndex=1&pSize=1000`;
+        "https://openapi.gg.go.kr/Aedstus"
+        + "?KEY=b8d51375948e422eb4d6c7b0a38b1cbc"
+        + "&Type=json"
+        + "&pIndex=1"
+        + "&pSize=1000";
 
     const res = await fetch(url);
+    if (!res.ok) {
+        throw new Error("API 응답 에러: " + res.status);
+    }
+
     const json = await res.json();
-    return json.Publtolt[1].row;
+
+    // 구조 예: { Aedstus: [ {head...}, {row: [...] } ] }
+    if (!json.Aedstus || !json.Aedstus[1] || !json.Aedstus[1].row) {
+        throw new Error("응답 구조가 예상과 다릅니다.");
+    }
+
+    return json.Aedstus[1].row;
+}
+
+// ---------------------------
+// Leaflet 지도 관련 전역변수
+// ---------------------------
+let map = null;
+let markersLayer = null;
+
+// ---------------------------
+// 지도에 내 위치 + AED 표시
+// ---------------------------
+function showMap(myLat, myLon, nearbyList) {
+    const mapContainer = document.getElementById("mapContainer");
+    mapContainer.style.display = "block";
+
+    if (!map) {
+        map = L.map('map').setView([myLat, myLon], 14);
+
+        // 기본 배경지도: OSM
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; OpenStreetMap'
+        }).addTo(map);
+    } else {
+        map.setView([myLat, myLon], 14);
+    }
+
+    if (markersLayer) {
+        markersLayer.clearLayers();
+    } else {
+        markersLayer = L.layerGroup().addTo(map);
+    }
+
+    // 내 위치 마커
+    const myMarker = L.marker([myLat, myLon]);
+    myMarker.bindPopup("📍 내 위치");
+    markersLayer.addLayer(myMarker);
+
+    // AED 마커들
+    nearbyList.forEach(a => {
+        const lat = parseFloat(a.REFINE_WGS84_LAT);
+        const lon = parseFloat(a.REFINE_WGS84_LOGT);
+        if (!lat || !lon) return;
+
+        const title = a.INSTL_INST_NM || "AED 설치기관";
+        const loc = a.INSTL_LOC || "";
+        const addr = a.REFINE_ROADNM_ADDR || a.REFINE_LOTNO_ADDR || "";
+        const tel = a.INSTL_INST_TELNO || a.MNGR_TELNO || "전화번호 없음";
+
+        const marker = L.marker([lat, lon]);
+        marker.bindPopup(`
+            <b>${title}</b><br/>
+            ${loc ? "[" + loc + "]<br/>" : ""}
+            ${addr}<br/>
+            ☎ ${tel}
+        `);
+        markersLayer.addLayer(marker);
+    });
 }
 
 // ---------------------------
@@ -112,58 +251,86 @@ document.getElementById("findBtn").onclick = function () {
     const status = document.getElementById("status");
     const result = document.getElementById("result");
 
+    status.classList.add("loading");
     status.innerHTML = "📍 위치 찾는 중...";
     result.innerHTML = "";
 
+    if (!navigator.geolocation) {
+        status.classList.remove("loading");
+        status.innerHTML = "❗ 이 브라우저에서는 위치 정보를 사용할 수 없습니다.";
+        return;
+    }
+
     navigator.geolocation.getCurrentPosition(async pos => {
-        status.innerHTML = "📡 AED 불러오는 중...";
+        status.innerHTML = "📡 AED 데이터 불러오는 중...";
 
         const myLat = pos.coords.latitude;
         const myLon = pos.coords.longitude;
 
-        const data = await fetchAED();
+        try {
+            const data = await fetchAED();
 
-        const nearby = [];
+            const nearby = [];
 
-        data.forEach(aed => {
-            const lat = parseFloat(aed.REFINE_WGS84_LAT);
-            const lon = parseFloat(aed.REFINE_WGS84_LOGT);
+            data.forEach(aed => {
+                const lat = parseFloat(aed.REFINE_WGS84_LAT);
+                const lon = parseFloat(aed.REFINE_WGS84_LOGT);
 
-            if (!lat || !lon) return;
+                if (!lat || !lon) return;
 
-            const dist = getDistance(myLat, myLon, lat, lon);
+                const dist = getDistance(myLat, myLon, lat, lon);
 
-            if (dist < 3) { // 반경 3km
-                nearby.push({
-                    ...aed,
-                    distance: dist
-                });
+                // 반경 3km 이내만
+                if (dist < 3) {
+                    nearby.push({
+                        ...aed,
+                        distance: dist
+                    });
+                }
+            });
+
+            if (nearby.length === 0) {
+                status.classList.remove("loading");
+                status.innerHTML = "😢 주변 3km 내 AED가 없습니다.";
+                document.getElementById("mapContainer").style.display = "none";
+                return;
             }
-        });
 
-        if (nearby.length === 0) {
-            status.innerHTML = "😢 주변 3km 내 AED 없음";
-            return;
+            status.classList.remove("loading");
+            status.innerHTML = `✨ 주변 AED ${nearby.length}개 발견! (반경 3km 이내)`;
+
+            // 거리순 정렬
+            nearby.sort((a, b) => a.distance - b.distance);
+
+            nearby.forEach(a => {
+                const name = a.INSTL_INST_NM || "AED 설치기관";
+                const loc = a.INSTL_LOC || "";
+                const addr = a.REFINE_ROADNM_ADDR || a.REFINE_LOTNO_ADDR || "";
+                const tel = a.INSTL_INST_TELNO || a.MNGR_TELNO || "전화번호 없음";
+
+                result.innerHTML += `
+                    <div class="card">
+                        <div class="card-title">📍 ${name}</div>
+                        ${loc ? `<div>설치위치: ${loc}</div>` : ""}
+                        <div>주소: ${addr}</div>
+                        <div>전화번호: ${tel}</div>
+                        <div class="distance">거리: ${a.distance.toFixed(2)} km</div>
+                    </div>
+                `;
+            });
+
+            // 지도 표시
+            showMap(myLat, myLon, nearby);
+
+        } catch (e) {
+            console.error(e);
+            status.classList.remove("loading");
+            status.innerHTML = "❗ AED 데이터를 불러오는 중 오류가 발생했습니다. (콘솔 확인)";
         }
 
-        status.innerHTML = `✨ 주변 AED ${nearby.length}개 발견!`;
-
-        nearby.sort((a, b) => a.distance - b.distance);
-
-        nearby.forEach(a => {
-            result.innerHTML += `
-                <div class="card">
-                    <b>📍 ${a.BULD_NM || "이름 없음"}</b><br>
-                    주소: ${a.REFINE_ROADNM_ADDR}<br>
-                    운영기관: ${a.MANAGE_INST_NM || "정보 없음"}<br>
-                    전화번호: ${a.MANAGE_INST_TEL || "없음"}<br>
-                    거리: ${a.distance.toFixed(2)} km
-                </div>
-            `;
-        });
-
     }, err => {
-        status.innerHTML = "❗ 위치 권한이 필요합니다!";
+        status.classList.remove("loading");
+        status.innerHTML = "❗ 위치 권한이 필요합니다! (브라우저에서 위치 허용해주세요)";
     });
 };
 </script>
